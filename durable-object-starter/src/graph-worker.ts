@@ -71,7 +71,7 @@ async function findNodes(kv: KVNamespace, symbol: string): Promise<GraphNode[]> 
 
 async function callModel(apiKey: string, prompt: string, mode: string): Promise<string> {
 	// instead of this really simple shit
-	// we should
+	// we should actually do something intresting
 	const models = {
 		creative: 'openai/gpt-4-turbo-preview',
 		analysis: 'anthropic/claude-3-sonnet',
@@ -219,7 +219,7 @@ Example:
   POST /process
   {"query": "How does consciousness emerge?", "mode": "integration"}
           `,
-						{ headers: { 'Content-Type': 'text/plain', ...corsHeaders } }
+						{ headers: { ...corsHeaders, 'Content-Type': 'text/plain' } }
 					);
 
 				case '/process':
@@ -278,10 +278,18 @@ Example:
 					return new Response('Not found', { status: 404 });
 			}
 		} catch (error) {
+			if (error instanceof Error === false)
+				return Response.json(
+					{
+						error: 'Processing failed',
+						details: 'Unexpected error',
+					},
+					{ status: 500, headers: corsHeaders }
+				);
 			return Response.json(
 				{
 					error: 'Processing failed',
-					details: error.message,
+					details: (error as Error).message,
 				},
 				{ status: 500, headers: corsHeaders }
 			);
