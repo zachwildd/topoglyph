@@ -1,0 +1,3 @@
+[[migrations]]
+tag = "v1" # Should be unique for each entry
+new_sqlite_classes = ["MyDurableObject"] # Array of new classes
