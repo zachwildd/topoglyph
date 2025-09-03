@@ -1,5 +1,27 @@
 # TopoGlyph: A Meta-Framework for Understanding Consciousness
 
+```
+topoglyph/
+├── core/
+│   ├── pattern.py          # Pattern parsing and manipulation
+│   ├── module.py           # Module interface definition
+│   ├── registry.py         # Simple module discovery
+│   └── executor.py         # Module execution engine
+├── modules/
+│   ├── logic/              # Basic logical reasoning
+│   ├── math/               # Simple mathematical operations
+│   ├── text/               # Text processing
+│   └── template/           # Module template for developers
+├── examples/
+│   ├── hello_world.py      # Simplest possible example
+│   ├── grandma_care.py     # Health monitoring demo
+│   └── policy_analysis.py  # Healthcare policy reasoning
+└── tools/
+    ├── tg_shell.py         # Interactive TopoGlyph shell
+    ├── module_dev.py       # Module development helper
+    └── pattern_viz.py      # Pattern visualization
+```
+
 ## Overview
 
 TopoGlyph is an evolving meta-theoretical framework for modeling and understanding consciousness through increasingly sophisticated topological representations. This repository contains 32 iterations of TopoGlyph, each building upon previous versions to create a comprehensive language for discussing the patterns, structures, and dynamics of conscious experience.

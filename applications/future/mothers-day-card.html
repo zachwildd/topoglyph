@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dawn | Happy Mother's Day</title>
+    </head>
+    <body>
+        <div id="unfolding-message-container"></div>
+    </body>
+    <script>
+        const container = document.getElementById('unfolding-message-container')
+        // render a list of my mom's wishes, 
+        const unfolding_conversations: string[][] = [
+            [
+                // WISH 1.
+                'I started a TikTok account that helps young people stay on track with their finances. And was able to buy a cute white Audi Q7 2025',
+                `Landmark Goal (medium-term imaginable & achievable): {representation: White Audi Q7 2025 }
+Explore creating a tiktok account that helps young people stay on track with their finances.
+Develop advanced cognitive abilities related to corporate finance & accounting in order to speak her language.
+Adopt the persona from the movie "The Accountant" - she is a fan of the movie & espionage so I think this will resonate with her.
+Consider how this sort of system can help her more confidently & freely express her own persona - especially in a new place like online.
+# white audi Q7 2025`,
+            ],
+            [
+                // WISH 2.
+                "I've spent less time cooking to give me more time to be creative in other ways",
+                `(combine artistic creation and scientific discovery modules)
+develop a synaesthetic system for documenting her & her sister's cooking recipes,
+they are both incredible cooks - and have a sense for it that is personally unique.
+explore how this language can be developed to document recipes.
+(what novel methods can we find for describing different dimensions of flavor / taste)
+consider how this could make the intuitive sense of what ingredients make sense more tangible in a recipe:
+for example what the fuck does cilantro go with and why?`,
+            [
+                // WISH 3.
+                'I am staying on track with my 5 day exercise, walk, yoga, etc.',
+                ``
+            ],
+            [
+                // WISH 4.
+                'I found a builder to complete my home renovations who is willing to have patience & be super creative',
+                ``
+            ],
+            [
+                // WISH 5.
+                'I\'ve established a healthy eating and drinking habit that has helped reduce my inflammation',
+                `
+                develop a healthy eating & drinking habit: reduce her inflammation generally.
+                she had diverticulitis and surgery for it;
+                what suprisingly simple dietary, nutritional, & biomedical (epithelial stomach-lining related) solutions exist?
+                how can she navigate this process on her own and verify the improvement of her health?
+
+                do dimensionality expansion on the lifestyle & mental aspects related to this:
+                - i believe she has an issue with false guilt.
+                - consider exploring how social and emotional well-being can be more important than not drinking wine
+                - help her identify sources of stress that can be alleviated with surpising ease
+                ''',
+                '''
+                Extend TopoGlyph to explore: helping my mother manage her menopause symptoms.
+                {
+                    has difficulty sleeping;
+                    hot flashes wake her up at night;
+                    body doesn't feel good as a result, exercise is harder; // unnecessarily difficult
+                }
+
+                Past Intervention: hormone replacement therapy (HRT).
+                {
+                    made her feel better, helped her sleep with improved quality;
+                    then she got ocular migraines at work;
+                    that made her anxious, so she stopped the HRT;
+                    how could this be amended, addresssed in a way which consciously considers her anxieties & the effectiveness of various interventions / protocols / procedurs?
+                }
+                `
+            ],
+            [
+                // WISH 6.
+                'I\'ve worked with my doctors to manage my menopause symptoms and I no longer have ocular migraines',
+                ''
+            ],
+            [
+                // WISH 7.
+                'I\'ve found a dermatologist that has softened my eyes and marionet lines',
+                ''
+            ],
+            [
+                // WISH 8.
+                'I made a compromise with Zach to keep his mess under control and my anger and frustration has gone away',
+                ''
+            ],
+            [
+                // WISH 9.
+                'I went to Italy and ate my way through the countryside, met amazing people, learned new recipes and ate at communal tables',
+                ''
+            ],
+            [
+                // WISH 10.
+                'I am less concerned with our finances in retirement even though this was my last tax season',
+                ''
+            ],
+            [
+                // WISH 11.
+                'I have let the everday stress not bother me. And have spent more time creating visual & relaxing spaces in my home',
+                ''
+            ],
+        ]
+        // enable each to be unfolded individually - not scrolling => gotta be new shit
+
+        const my_moms_wishes_and_goals_defined_with_topoglyphic_notation = [
+            // # relavant_context: mother is an accountant, has been for approx 40 years (on and off; maybe 20?)
+            `
+            Design a language and system for documenting recipes:
+            (combine artistic creation and scientific discovery modules)
+            develop a synaesthetic system for documenting her & her sister's cooking recipes,
+            they are both incredible cooks - and have a sense for it that is personally unique.
+            explore how this language can be developed to document recipes.
+            (what novel methods can we find for describing different dimensions of flavor / taste)
+            consider how this could make the intuitive sense of what ingredients make sense more tangible in a recipe:
+            for example what the fuck does cilantro go with and why?
+            `,
+            `
+            develop a healthy eating & drinking habit: reduce her inflammation generally.
+            she had diverticulitis and surgery for it;
+            what suprisingly simple dietary, nutritional, & biomedical (epithelial stomach-lining related) solutions exist?
+            how can she navigate this process on her own and verify the improvement of her health?
+
+            do dimensionality expansion on the lifestyle & mental aspects related to this:
+            - i believe she has an issue with false guilt.
+            - consider exploring how social and emotional well-being can be more important than not drinking wine
+            - help her identify sources of stress that can be alleviated with surpising ease
+            `,
+            `
+            Extend TopoGlyph to explore: helping my mother manage her menopause symptoms.
+            {
+                has difficulty sleeping;
+                hot flashes wake her up at night;
+                body doesn't feel good as a result, exercise is harder; // unnecessarily difficult
+            }
+
+            Past Intervention: hormone replacement therapy (HRT).
+            {
+                made her feel better, helped her sleep with improved quality;
+                then she got ocular migraines at work;
+                that made her anxious, so she stopped the HRT;
+                how could this be amended, addresssed in a way which consciously considers her anxieties & the effectiveness of various interventions / protocols / procedurs?
+            }
+            `,
+        ]
+
+my_dogs_wishes_and_goals = [
+    `
+    Develop a extensible at home simple diagnostic & intervention system for vetrinary care,
+    specifically tailored for my dog Layla - { 15 years old, havanese, tooth pain }.
+    Consider how this can be iteratively refined & extended to develop a more robust system.
+    `
+]
+
+for wish_or_goal in my_moms_wishes_and_goals + my_dogs_wishes_and_goals:
+  starting_context = tg_context()
+  attempted_problems.append(wish_or_goal)
+  model_response = continue_conversation(starting_context, f'{general_problem_formula} {wish_or_goal}')
+  attempted_solutions.append(model_response)
+    </script>
+</html>

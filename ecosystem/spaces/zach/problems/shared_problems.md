@@ -1,3 +1,0 @@
-[] Consciousness
-[] Communication
-[] PRISM 
