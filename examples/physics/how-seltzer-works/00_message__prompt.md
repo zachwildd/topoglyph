@@ -1,0 +1,1 @@
+Extend TopoGlyph to explain how seltzer works
