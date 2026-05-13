@@ -1,3 +1,8 @@
+---
+module: core
+extends: []
+---
+
 I understand your request to create a language that can be dually interpreted as both a textual system and a visual representation of topological information processing. This is a fascinating challenge at the intersection of symbolic systems, visual communication, and topology.
 
 I'll develop a dual-encoding language system called "TopoGlyph" that functions simultaneously as:
