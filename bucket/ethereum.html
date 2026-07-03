@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TopoGlyph — read it from Ethereum</title>
+<style>
+  :root { --fg:#111; --mut:#666; --line:#e5e5e5; --ok:#15803d; --bad:#b91c1c; --bg:#fff; }
+  @media (prefers-color-scheme: dark){
+    :root { --fg:#e8e8e8; --mut:#9a9a9a; --line:#2a2a2a; --ok:#4ade80; --bad:#f87171; --bg:#0d0d0d; }
+  }
+  body{ font:16px/1.6 system-ui,-apple-system,sans-serif; color:var(--fg); background:var(--bg);
+        max-width:820px; margin:32px auto; padding:0 18px; }
+  h1{ font-size:22px; margin:0 0 2px; }
+  .sub{ color:var(--mut); margin:0 0 18px; }
+  a{ color:inherit; }
+  code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em;
+        background:color-mix(in srgb, var(--fg) 8%, transparent); padding:1px 5px; border-radius:4px; }
+  .card{ border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:14px 0; }
+  .meta{ display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--mut); font-size:14px; }
+  .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:13px; border:1px solid var(--line); }
+  .ok{ color:var(--ok); } .bad{ color:var(--bad); }
+  #status{ color:var(--mut); }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:10px 0; }
+  button{ font:14px system-ui; padding:7px 12px; border:1px solid var(--line); border-radius:7px;
+          background:transparent; color:inherit; cursor:pointer; }
+  button:disabled{ opacity:.45; cursor:default; }
+  #image{ max-width:160px; image-rendering:pixelated; border:1px solid var(--line); border-radius:8px; }
+  pre#text{ white-space:pre-wrap; word-break:break-word; border:1px solid var(--line); border-radius:10px;
+            padding:16px; max-height:70vh; overflow:auto; font-size:14px; line-height:1.55;
+            font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .links a{ display:inline-block; margin-right:14px; font-size:14px; }
+  footer{ color:var(--mut); font-size:13px; margin-top:24px; border-top:1px solid var(--line); padding-top:12px; }
+</style>
+</head>
+<body>
+  <h1 id="name">TopoGlyph</h1>
+  <p class="sub">The full text, read live from the Ethereum blockchain. No wallet, no server — this page
+     just calls a public node and decodes what comes back.</p>
+
+  <div class="card">
+    <div class="row">
+      <img id="image" alt="" hidden>
+      <div>
+        <div id="desc" class="sub" style="margin:0 0 6px"></div>
+        <div class="meta">
+          <span>Contract <code id="addr"></code></span>
+          <span>Token <code>#2</code></span>
+          <span>Network: Ethereum mainnet</span>
+        </div>
+      </div>
+    </div>
+    <p id="status">Loading from the chain…</p>
+    <div class="row" id="verify" hidden>
+      <span class="badge" id="lenbadge"></span>
+      <span class="badge" id="hashbadge"></span>
+      <span class="badge" id="lockbadge"></span>
+    </div>
+    <div class="row" id="actions" hidden>
+      <button id="copy">Copy text</button>
+      <button id="download">Download topoglyph.md</button>
+      <button id="reload">Re-fetch</button>
+    </div>
+  </div>
+
+  <pre id="text" hidden></pre>
+
+  <footer>
+    <div class="links">
+      <a id="etherscan" href="#" target="_blank" rel="noopener">Etherscan</a>
+      <a id="opensea" href="#" target="_blank" rel="noopener">OpenSea</a>
+      <a href="https://github.com/xyzcoordinate/TopoGlyph" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p>This page is read-only and self-contained: open it from anywhere, or host it as a static file.
+       It tries several public RPC endpoints in turn. The data lives in the contract's storage and is
+       locked — it cannot be changed or removed by anyone, including the author.</p>
+  </footer>
+
+<script>
+const CONTRACT   = "0xe1888706EC9C071E149060aeF70B539eBeb61092";
+const TOKEN_ID   = 2;
+const EXPECT_HASH = "3d194c53f2e3c6a8e3a2bdb6a1e940c43c04c33659268169d157807bec09f93f"; // sha256 of on-chain bytes
+const EXPECT_LEN  = 78650;
+
+// Function selectors (keccak256(signature)[:4])
+const SEL = {
+  profileOf:  "0x3e26d31e", // profileOf(uint256) -> string
+  tokenURI:   "0xc87b56dd", // tokenURI(uint256)  -> string
+  isLocked:   "0xf6aacfb1", // isLocked(uint256)  -> bool
+};
+
+// CORS-friendly public mainnet RPCs, tried in order.
+const RPCS = [
+  "https://ethereum-rpc.publicnode.com",
+  "https://eth.llamarpc.com",
+  "https://cloudflare-eth.com",
+  "https://eth.drpc.org",
+  "https://1rpc.io/eth",
+];
+
+const $ = s => document.querySelector(s);
+const id32 = n => n.toString(16).padStart(64, "0");
+const calldata = (sel) => sel + id32(TOKEN_ID);
+
+async function ethCall(data){
+  let lastErr;
+  for (const rpc of RPCS){
+    try{
+      const res = await fetch(rpc, {
+        method:"POST", headers:{"content-type":"application/json"},
+        body: JSON.stringify({jsonrpc:"2.0", id:1, method:"eth_call",
+          params:[{to:CONTRACT, data}, "latest"]})
+      });
+      const j = await res.json();
+      if (j.error) throw new Error(j.error.message || "rpc error");
+      if (j.result && j.result !== "0x") return {result:j.result, rpc};
+      throw new Error("empty result");
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr || new Error("all RPCs failed");
+}
+
+function hexToBytes(hex){
+  if (hex.startsWith("0x")) hex = hex.slice(2);
+  const out = new Uint8Array(hex.length/2);
+  for (let i=0;i<out.length;i++) out[i] = parseInt(hex.substr(i*2,2),16);
+  return out;
+}
+// Decode an ABI-encoded single dynamic value (string/bytes): [offset][length][data]
+function decodeAbiBytes(hex){
+  if (hex.startsWith("0x")) hex = hex.slice(2);
+  const len = parseInt(hex.slice(64,128),16);
+  return hexToBytes(hex.slice(128, 128 + len*2));
+}
+async function sha256hex(bytes){
+  if (!(crypto.subtle && crypto.subtle.digest)) return null;
+  try{
+    const h = await crypto.subtle.digest("SHA-256", bytes);
+    return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  }catch(_){ return null; }
+}
+
+let LOADED_TEXT = "";
+
+async function load(){
+  $("#status").textContent = "Loading from the chain…";
+  $("#verify").hidden = $("#actions").hidden = $("#text").hidden = true;
+  $("#addr").textContent = CONTRACT;
+  $("#etherscan").href = `https://etherscan.io/address/${CONTRACT}`;
+  $("#opensea").href = `https://opensea.io/assets/ethereum/${CONTRACT.toLowerCase()}/${TOKEN_ID}`;
+
+  try{
+    // Card metadata (name, description, image) from tokenURI
+    try{
+      const {result} = await ethCall(calldata(SEL.tokenURI));
+      const uri = new TextDecoder().decode(decodeAbiBytes(result));
+      if (uri.startsWith("data:application/json;base64,")){
+        const j = JSON.parse(atob(uri.split(",",2)[1]));
+        if (j.name) $("#name").textContent = j.name;
+        if (j.description) $("#desc").textContent = j.description;
+        if (j.image){ const im=$("#image"); im.src=j.image; im.hidden=false; im.alt=j.name||"image"; }
+      }
+    }catch(_){ /* metadata is optional */ }
+
+    // The full profile text
+    const {result, rpc} = await ethCall(calldata(SEL.profileOf));
+    const bytes = decodeAbiBytes(result);
+    LOADED_TEXT = new TextDecoder("utf-8").decode(bytes);
+
+    $("#text").textContent = LOADED_TEXT;
+    $("#text").hidden = false;
+
+    // Verification badges
+    const lenOk = bytes.length === EXPECT_LEN;
+    $("#lenbadge").textContent = `${bytes.length.toLocaleString()} bytes` + (lenOk ? " ✓" : " (expected "+EXPECT_LEN.toLocaleString()+")");
+    $("#lenbadge").className = "badge " + (lenOk ? "ok" : "bad");
+
+    const hash = await sha256hex(bytes);
+    if (hash){
+      const hOk = hash === EXPECT_HASH;
+      $("#hashbadge").textContent = "SHA-256 " + hash.slice(0,10) + "…" + (hOk ? " ✓ matches" : " ✗");
+      $("#hashbadge").className = "badge " + (hOk ? "ok" : "bad");
+      $("#hashbadge").title = hash;
+    } else {
+      $("#hashbadge").textContent = "SHA-256 (needs https)";
+      $("#hashbadge").className = "badge";
+    }
+
+    try{
+      const lk = await ethCall(calldata(SEL.isLocked));
+      const locked = parseInt(lk.result,16) === 1;
+      $("#lockbadge").textContent = locked ? "🔒 locked / immutable" : "unlocked";
+      $("#lockbadge").className = "badge " + (locked ? "ok" : "");
+    }catch(_){ $("#lockbadge").hidden = true; }
+
+    $("#status").textContent = "Read live from " + rpc;
+    $("#verify").hidden = $("#actions").hidden = false;
+  }catch(e){
+    $("#status").innerHTML = '<span class="bad">Could not read from any public RPC ('+ (e.message||e) +
+      '). Try again, or read it directly on <a href="https://etherscan.io/address/'+CONTRACT+'#readContract">Etherscan</a>.</span>';
+  }
+}
+
+$("#copy").onclick = () => navigator.clipboard.writeText(LOADED_TEXT);
+$("#download").onclick = () => {
+  const blob = new Blob([LOADED_TEXT], {type:"text/markdown"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "topoglyph.md"; a.click();
+  URL.revokeObjectURL(a.href);
+};
+$("#reload").onclick = load;
+load();
+</script>
+</body>
+</html>
