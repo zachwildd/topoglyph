@@ -1,0 +1,23 @@
+{
+  "name": "topoglyph",
+  "description": "TopoGlyph for Claude Code: a skill that extends the TopoGlyph notation to new problems.",
+  "owner": {
+    "name": "Zach Wild",
+    "url": "https://github.com/xyzcoordinate"
+  },
+  "plugins": [
+    {
+      "name": "topoglyph",
+      "source": "./",
+      "description": "TopoGlyph, a dual-encoding symbolic language.",
+      "version": "0.0.3",
+      "author": {
+        "name": "Zach Wild"
+      },
+      "homepage": "https://github.com/zachwildd/topoglyph",
+      "repository": "https://github.com/zachwildd/topoglyph",
+      "license": "Unlicense",
+      "keywords": ["topoglyph", "cognitive-modeling", "dsl", "topology"]
+    }
+  ]
+}
